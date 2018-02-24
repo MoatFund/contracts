@@ -16,8 +16,8 @@ contract addressKeeper is Ownable {
 
 contract MoatToken is PausableToken, addressKeeper {
 
-    string public constant name = "MoatCoin v1.0";
-    string public constant symbol = "MTC";
+    string public constant name = "MoatFund v1.0";
+    string public constant symbol = "MTF";
     uint8 public constant decimals = 0;
 
     function mintToken(uint mintedAmount) onlyOwner public {
