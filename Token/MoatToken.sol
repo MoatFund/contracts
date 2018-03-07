@@ -26,7 +26,7 @@ contract MoatToken is PausableToken, addressKeeper {
         Transfer(0, fundAddress, mintedAmount);
     }
 
-    // function called by moatfund contract where the token holder transfer the token to fund address (redeeming) 
+    // function called by moatfund contract where the token holder transfer the token to fund address (redeeming)
     function redeemToken(uint256 _mtcTokens, address _from) public {
         require(msg.sender == fundAddress);
         require(_mtcTokens <= balances[_from]);

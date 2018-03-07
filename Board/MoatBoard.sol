@@ -157,7 +157,7 @@ contract MoatBoard is addressKeeper {
         uint weiAmount,
         string proposalDescription
     )
-        onlyOwner public
+        onlyMembers public
         returns (uint proposalID)
     {
         proposalID = proposals.length++;
@@ -176,6 +176,7 @@ contract MoatBoard is addressKeeper {
 
     /**
      * get proposal votes array
+     * proposalNumber starts with 0
      */
     function getProposalVote(
         uint proposalNumber,

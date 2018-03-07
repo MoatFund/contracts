@@ -34,6 +34,7 @@ contract Ownable {
     }
 
     function changeSecOwner(address targetAddress) public bothOwner {
+        require(targetAddress != address(0));
         secondOwner = targetAddress;
     }
 

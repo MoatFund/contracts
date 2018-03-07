@@ -25,8 +25,8 @@ contract addressKeeper is Ownable {
 contract MoatFund is addressKeeper {
 
     // wei per MTC
-    // 1 ETH = 10000 MTC
-    // 1 MTC = 100000000000000 wei
+    // 1 ETH = 5000 MTC
+    // 1 MTC = 200000000000000 wei
     uint256 public mtcRate; // in wei
     bool public mintBool;
     uint256 public minInvest; // minimum investment in wei
@@ -73,7 +73,7 @@ contract MoatFund is addressKeeper {
         }
     }
 
-    // calculates value of MTC that can be redeemed from the ETH
+    // calculate value of MTC that can be redeemed from the ETH
     function redeem(uint256 _mtcTokens) public {
         if (msg.sender != owner) {
             require(redeemBool);
