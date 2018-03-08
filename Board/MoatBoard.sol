@@ -65,7 +65,7 @@ contract MoatBoard is addressKeeper {
     /**
      * Constructor function
      */
-    function Board (
+    function MoatBoard (
         uint minimumQuorumForProposals,
         uint minutesForDebate,
         int marginOfVotesForMajority
@@ -141,7 +141,6 @@ contract MoatBoard is addressKeeper {
         minimumQuorum = minimumQuorumForProposals;
         debatingPeriodInMinutes = minutesForDebate;
         majorityMargin = marginOfVotesForMajority;
-
         ChangeOfRules(minimumQuorum, debatingPeriodInMinutes, majorityMargin);
     }
 
