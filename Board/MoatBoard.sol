@@ -17,7 +17,7 @@ contract MoatBoard is addressKeeper {
 
     // Contract Variables and events
     uint public minimumQuorum;
-    uint public debatingPeriodInMinutes;
+    uint public debatingPeriodInBlocks;
     int public majorityMargin;
     Proposal[] public proposals;
     uint public numProposals;
@@ -29,7 +29,7 @@ contract MoatBoard is addressKeeper {
     event Voted(uint proposalID, bool position, address voter, string justification);
     event ProposalTallied(uint proposalID, int result, uint quorum, bool active);
     event MembershipChanged(address member, bool isMember);
-    event ChangeOfRules(uint newMinimumQuorum, uint newDebatingPeriodInMinutes, int newMajorityMargin);
+    event ChangeOfRules(uint newMinimumQuorum, uint newDebatingPeriodInBlocks, int newMajorityMargin);
 
     struct Proposal {
         address recipient;
@@ -67,10 +67,10 @@ contract MoatBoard is addressKeeper {
      */
     function MoatBoard (
         uint minimumQuorumForProposals,
-        uint minutesForDebate,
+        uint blocksForDebate,
         int marginOfVotesForMajority
     )  public {
-        changeVotingRules(minimumQuorumForProposals, minutesForDebate, marginOfVotesForMajority);
+        changeVotingRules(minimumQuorumForProposals, blocksForDebate, marginOfVotesForMajority);
         // It’s necessary to add an empty first member
         addMember(0, "");
         // and let's add the founder, to save a step later
@@ -108,8 +108,7 @@ contract MoatBoard is addressKeeper {
      */
     function removeMember(address targetMember) onlyOwner public {
         require(memberId[targetMember] != 0);
-
-        for (uint i = memberId[targetMember]; i<members.length-1; i++){
+        for (uint i = memberId[targetMember]; i<members.length-1; i++) {
             members[i] = members[i+1];
         }
         delete members[members.length-1];
@@ -126,22 +125,22 @@ contract MoatBoard is addressKeeper {
     /**
      * Change voting rules
      *
-     * Make so that proposals need to be discussed for at least `minutesForDebate/60` hours,
+     * Make so that proposals need to be discussed for at least debatingPeriodInBlocks,
      * have at least `minimumQuorumForProposals` votes, and have 50% + `marginOfVotesForMajority` votes to be executed
      *
      * @param minimumQuorumForProposals how many members must vote on a proposal for it to be executed
-     * @param minutesForDebate the minimum amount of delay between when a proposal is made and when it can be executed
+     * @param blocksForDebate the minimum amount of delay between when a proposal is made and when it can be executed
      * @param marginOfVotesForMajority the proposal needs to have 50% plus this number
      */
     function changeVotingRules(
         uint minimumQuorumForProposals,
-        uint minutesForDebate,
+        uint blocksForDebate,
         int marginOfVotesForMajority
     ) onlyOwner public {
         minimumQuorum = minimumQuorumForProposals;
-        debatingPeriodInMinutes = minutesForDebate;
+        debatingPeriodInBlocks = blocksForDebate;
         majorityMargin = marginOfVotesForMajority;
-        ChangeOfRules(minimumQuorum, debatingPeriodInMinutes, majorityMargin);
+        ChangeOfRules(minimumQuorum, debatingPeriodInBlocks, majorityMargin);
     }
 
     /**
@@ -164,7 +163,7 @@ contract MoatBoard is addressKeeper {
         p.recipient = owner;
         p.amount = weiAmount;
         p.description = proposalDescription;
-        p.votingDeadline = now + debatingPeriodInMinutes * 1 minutes;
+        p.votingDeadline = block.number + debatingPeriodInBlocks;
         p.executed = false;
         p.proposalPassed = false;
         p.numberOfVotes = 0;
@@ -235,7 +234,7 @@ contract MoatBoard is addressKeeper {
      */
     function executeProposal(uint proposalNumber) public {
         Proposal storage p = proposals[proposalNumber];
-        require(now > p.votingDeadline                                             // If it is past the voting deadline
+        require(block.number > p.votingDeadline                                             // If it is past the voting deadline
             && !p.executed                                                         // and it has not already been executed
             && p.numberOfVotes >= minimumQuorum);                                                // must be the owner only                                  // and a minimum quorum has been reached...
         // ...then execute result
