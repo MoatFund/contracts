@@ -21,14 +21,13 @@ contract MoatBoard is addressKeeper {
     int public majorityMargin;
     Proposal[] public proposals;
     uint public numProposals;
-    mapping (address => uint) public memberId;
-    Member[] public members;
+    mapping (address => bool) public members;
+    uint public numberOfMembers;
 
     event receivedEther(address sender, uint amount);
     event ProposalAdded(uint proposalID, address recipient, uint amount, string description);
     event Voted(uint proposalID, bool position, address voter, string justification);
     event ProposalTallied(uint proposalID, int result, uint quorum, bool active);
-    event MembershipChanged(address member, bool isMember);
     event ChangeOfRules(uint newMinimumQuorum, uint newDebatingPeriodInBlocks, int newMajorityMargin);
 
     struct Proposal {
@@ -44,12 +43,6 @@ contract MoatBoard is addressKeeper {
         mapping (address => bool) voted;
     }
 
-    struct Member {
-        address member;
-        string name;
-        uint memberSince;
-    }
-
     struct Vote {
         bool inSupport;
         address voter;
@@ -58,7 +51,7 @@ contract MoatBoard is addressKeeper {
 
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyMembers {
-        require(memberId[msg.sender] != 0);
+        require(members[msg.sender] == true);
         _;
     }
 
@@ -71,10 +64,6 @@ contract MoatBoard is addressKeeper {
         int marginOfVotesForMajority
     )  public {
         changeVotingRules(minimumQuorumForProposals, blocksForDebate, marginOfVotesForMajority);
-        // It’s necessary to add an empty first member
-        addMember(0, "");
-        // and let's add the founder, to save a step later
-        addMember(owner, 'founder');
     }
 
     function () payable  public {
@@ -89,14 +78,9 @@ contract MoatBoard is addressKeeper {
      * @param targetMember ethereum address to be added
      * @param memberName public name for that member
      */
-    function addMember(address targetMember, string memberName) onlyOwner public {
-        uint id = memberId[targetMember];
-        if (id == 0) {
-            memberId[targetMember] = members.length;
-            id = members.length++;
-        }
-        members[id] = Member({member: targetMember, memberSince: block.number, name: memberName});
-        MembershipChanged(targetMember, true);
+    function addMember(address targetMember) onlyOwner public {
+        members[targetMember] = true;
+        numberOfMembers++;
     }
 
     /**
@@ -107,19 +91,8 @@ contract MoatBoard is addressKeeper {
      * @param targetMember ethereum address to be removed
      */
     function removeMember(address targetMember) onlyOwner public {
-        require(memberId[targetMember] != 0);
-        for (uint i = memberId[targetMember]; i<members.length-1; i++) {
-            members[i] = members[i+1];
-        }
-        delete members[members.length-1];
-        members.length--;
-    }
-
-    /**
-     * number of members
-     */
-    function numMembers() view public returns (uint numberOfMembers) {
-        return (members.length - 1); // reduced 1 for non active members added in the constructor
+        members[targetMember] = false;
+        numberOfMembers--;
     }
 
     /**
