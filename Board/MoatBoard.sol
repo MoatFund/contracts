@@ -76,7 +76,6 @@ contract MoatBoard is addressKeeper {
      * Make `targetMember` a member named `memberName`
      *
      * @param targetMember ethereum address to be added
-     * @param memberName public name for that member
      */
     function addMember(address targetMember) onlyOwner public {
         members[targetMember] = true;
